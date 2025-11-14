@@ -77,7 +77,7 @@ jobs:
         if: env.PROVIDER == 'artifact'
         run: |
           # Habilita auth para el host de Artifact Registry (ej: us-central1-docker.pkg.dev)
-          gcloud auth configure-docker --quiet
+          gcloud auth configure-docker ${{ secrets.ARTIFACT_REGISTRY_LOCATION }}-docker.pkg.dev --quiet
 
       - name: Docker login to Docker Hub (if used)
         if: env.PROVIDER == 'dockerhub'
