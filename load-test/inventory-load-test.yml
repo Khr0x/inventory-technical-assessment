@@ -1,0 +1,19 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 1
+      arrivalRate: 500
+      name: "Sustained load - 500 req/s"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Get Inventory by Store"
+    flow:
+      - get:
+          url: "/api/stores/a34b0a4b-d84a-43a8-ab79-6c406ccb6eee/inventory"
+          expect:
+            - statusCode: 
+              - 200
+              - 404

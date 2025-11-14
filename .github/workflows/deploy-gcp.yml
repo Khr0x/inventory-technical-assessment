@@ -1,0 +1,94 @@
+name: CI & Deploy to Google Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: 18
+  IMAGE_TAG: ${{ github.sha }}
+  REGISTRY_PROVIDER: ${{ secrets.REGISTRY_PROVIDER }}
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+  GCP_REGION: ${{ secrets.GCP_REGION }}
+  CLOUD_RUN_SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
+
+jobs:
+  test:
+    name: Run tests and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests (Jest + coverage)
+        run: npm test -- --runInBand
+
+  build-and-deploy:
+    name: Build image, push to registry and deploy to Cloud Run
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: ${{ env.GCP_PROJECT }}
+      REGION: ${{ env.GCP_REGION }}
+      SERVICE: ${{ env.CLOUD_RUN_SERVICE }}
+      PROVIDER: ${{ env.REGISTRY_PROVIDER }}
+      IMAGE_TAG: ${{ env.IMAGE_TAG }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup gcloud (required to deploy to Cloud Run)
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Configure Docker auth for Artifact Registry (if used)
+        if: env.PROVIDER == 'artifact'
+        run: |
+          # Habilita auth para el host de Artifact Registry (ej: us-central1-docker.pkg.dev)
+          gcloud auth configure-docker --quiet
+
+      - name: Docker login to Docker Hub (if used)
+        if: env.PROVIDER == 'dockerhub'
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Prepare image name
+        run: |
+          if [ "${PROVIDER}" = "artifact" ]; then
+            # ARTIFACT_REGISTRY_LOCATION: ej. us-central1
+            # ARTIFACT_REGISTRY_REPOSITORY: nombre del repositorio en Artifact Registry
+            IMAGE="${{ secrets.ARTIFACT_REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_REPOSITORY }}/${{ env.SERVICE }}:${IMAGE_TAG}"
+          else
+            IMAGE="docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SERVICE }}:${IMAGE_TAG}"
+          fi
+          echo "IMAGE=${IMAGE}" >> $GITHUB_ENV
+          echo "Using image: $IMAGE"
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${SERVICE}" \
+            --image="$IMAGE" \
+            --region="${REGION}" \
+            --platform=managed \
+            --allow-unauthenticated \
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            --set-env-vars="NODE_ENV=production"

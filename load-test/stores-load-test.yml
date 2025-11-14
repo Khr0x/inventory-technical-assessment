@@ -1,0 +1,18 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 1
+      arrivalRate: 500
+      name: "Sustained load - 500 req/s"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "List Stores"
+    flow:
+      - get:
+          url: "/api/stores"
+          expect:
+            - statusCode: 200
+            - contentType: json
