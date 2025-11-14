@@ -108,5 +108,6 @@ jobs:
             --region="${REGION}" \
             --platform=managed \
             --allow-unauthenticated \
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
-            --set-env-vars="NODE_ENV=production"
+            --port=8080 \
+            --timeout=300 \
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},NODE_ENV=production"

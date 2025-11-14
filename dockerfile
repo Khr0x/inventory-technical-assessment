@@ -10,8 +10,12 @@ RUN npm run build
 FROM node:22-alpine
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
+
 COPY --from=builder /usr/src/app/package*.json ./
-COPY --from=builder /usr/src/app/node_modules ./node_modules
+RUN npm ci --only=production && npm cache clean --force
+
 COPY --from=builder /usr/src/app/dist ./dist
-EXPOSE 3000
+
+EXPOSE 8080
+
 CMD ["node", "dist/main.js"]

@@ -188,15 +188,31 @@ on:
 env:
   NODE_VERSION: 18
   IMAGE_TAG: ${{ github.sha }}
-  REGISTRY_PROVIDER: ${{ secrets.REGISTRY_PROVIDER }}
-  GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
-  GCP_REGION: ${{ secrets.GCP_REGION }}
-  CLOUD_RUN_SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
 
 jobs:
   test:
     name: Run tests and coverage
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: inventory_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/inventory_test
+      NODE_ENV: test
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -210,19 +226,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests (Jest + coverage)
-        run: npm test -- --runInBand
+      - name: Run unit tests with coverage
+        run: npm run test:unit -- --coverage --runInBand
 
   build-and-deploy:
     name: Build image, push to registry and deploy to Cloud Run
     needs: test
     runs-on: ubuntu-latest
     env:
-      PROJECT_ID: ${{ env.GCP_PROJECT }}
-      REGION: ${{ env.GCP_REGION }}
-      SERVICE: ${{ env.CLOUD_RUN_SERVICE }}
-      PROVIDER: ${{ env.REGISTRY_PROVIDER }}
-      IMAGE_TAG: ${{ env.IMAGE_TAG }}
+      PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+      REGION: ${{ secrets.GCP_REGION }}
+      SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
+      PROVIDER: ${{ secrets.REGISTRY_PROVIDER }}
+      IMAGE_TAG: ${{ github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -230,17 +246,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Setup gcloud (required to deploy to Cloud Run)
-        uses: google-github-actions/setup-gcloud@v1
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: ${{ env.PROJECT_ID }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker auth for Artifact Registry (if used)
         if: env.PROVIDER == 'artifact'
         run: |
           # Habilita auth para el host de Artifact Registry (ej: us-central1-docker.pkg.dev)
-          gcloud auth configure-docker --quiet
+          gcloud auth configure-docker ${{ secrets.ARTIFACT_REGISTRY_LOCATION }}-docker.pkg.dev --quiet
 
       - name: Docker login to Docker Hub (if used)
         if: env.PROVIDER == 'dockerhub'
@@ -270,7 +288,9 @@ jobs:
             --image="$IMAGE" \
             --region="${REGION}" \
             --platform=managed \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            --set-env-vars="NODE_ENV=production"
 ```
 
 ---
