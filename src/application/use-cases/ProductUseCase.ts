@@ -17,6 +17,10 @@ export class ProductUseCase {
 ) {}
   
 
+/**   Funcion para crear un nuevo producto
+   * @param product Datos del producto a crear
+   * @returns Producto creado
+   */
  async createProduct(product: CreateProductDTO): Promise<Product> {
     const tx = await sequelize.transaction();
     try {
@@ -47,6 +51,11 @@ export class ProductUseCase {
     }
   }
 
+  /**   Funcion para actualizar un producto existente
+   * @param id ID del producto a actualizar
+   * @param data Datos para actualizar el producto
+   * @returns Producto actualizado o null si no existe
+   */
   async updateProduct(id: string, data: UpdateProductDTO): Promise<Product | null> {
     const tx = await sequelize.transaction();
     try {
@@ -63,6 +72,10 @@ export class ProductUseCase {
     }
   }
 
+  /**   Funcion para obtener un producto por su ID
+   * @param id ID del producto a obtener
+   * @returns Producto encontrado o null si no existe
+   */
   async getProductById(id: string): Promise<Product | null> {
     try {
         const result = await this.productRepository.findById(id);
@@ -73,6 +86,11 @@ export class ProductUseCase {
   }
 
 
+  /**   Funcion para obtener una lista de productos con filtros y paginacion
+   * @param filter Filtros para la busqueda de productos
+   * @param pagination Parametros de paginacion
+   * @returns Objeto con la lista de productos y el conteo total
+   */
   async getProducts(filter?: ProductFilter, pagination?: Pagination): Promise<ProductPagination> {
     try {
         const result = await this.productRepository.findAll(filter, pagination);
@@ -82,6 +100,10 @@ export class ProductUseCase {
     }
   }
 
+  /**   Funcion para eliminar un producto por su ID
+   * @param id ID del producto a eliminar
+   * @returns Booleano que indica si la eliminacion fue exitosa
+   */
   async deleteProduct(id: string): Promise<boolean> {
     const tx = await sequelize.transaction();
    try {
@@ -92,5 +114,19 @@ export class ProductUseCase {
         await tx.rollback();
         throw error;
    }
+  }
+
+  /**
+   * Funcion para obtener los movimientos de inventario de un producto
+   * @param productId ID del producto para obtener sus movimientos
+   * @returns Lista de movimientos de inventario del producto
+   */
+  async getProductMovements(productId: string): Promise<any[]> {
+    try {
+        const movements = await this.productRepository.getProductMovements(productId);
+        return movements;
+    } catch (error) {
+        throw error;
+    }
   }
 }

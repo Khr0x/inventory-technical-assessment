@@ -7,6 +7,7 @@ import { ProductRepository } from "../../infraestructure/repositories/ProductRep
 import { StoreRepository } from "../../infraestructure/repositories/StoreRepository";
 import { ProductUseCase } from "../use-cases/ProductUseCase";
 import { Request, Response } from 'express';
+import { logger } from "../../config/logger";
 
 export class ProductController {
   private productUseCase: ProductUseCase;
@@ -141,6 +142,40 @@ export class ProductController {
                 res.status(error.statusCode).json(error.toJSON());
             } else {
                 console.error('Unexpected error in getInventoriesByStore:', error);
+                res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                    error: 'Internal server error',
+                    message: 'Ha ocurrido un error interno del servidor'
+                });
+            }
+        }
+    }
+
+    async getProductMovements(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            
+            logger.info('Fetching product movements', { productId: id });
+            
+            const movements = await this.productUseCase.getProductMovements(id);
+            
+            logger.info('Product movements retrieved successfully', { 
+                productId: id, 
+                movementsCount: movements.length 
+            });
+            
+            res.status(HttpStatus.OK).json({
+                success: true,
+                data: movements
+            });
+        } catch (error) {
+            logger.error('Error fetching product movements', {
+                error: error instanceof Error ? error.message : 'Unknown error',
+                productId: req.params.id
+            });
+            
+            if (error instanceof AppError) {
+                res.status(error.statusCode).json(error.toJSON());
+            } else {
                 res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                     error: 'Internal server error',
                     message: 'Ha ocurrido un error interno del servidor'

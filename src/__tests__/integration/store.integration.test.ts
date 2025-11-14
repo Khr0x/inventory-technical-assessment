@@ -15,7 +15,7 @@ describe('Tests de Integración - Tiendas', () => {
   });
 
   afterAll(async () => {
-    // Limpieza de datos de prueba
+    
   });
 
   describe('POST /api/stores - Crear Tienda', () => {

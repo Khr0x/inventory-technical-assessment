@@ -8,10 +8,12 @@ import { ProductPagination } from "../../domain/product/ProductPagination";
 import { InventoryModel } from "../db/models/InventoryModel";
 import { DuplicateProductError, ProductNotFoundError } from "../../errors";
 import { InactiveProductError } from "../../errors/ProductErrors";
+import { InventoryMovementModel } from "../db/models/InventoryMovementModel";
+import { StoreModel } from "../db/models/StoreModel";
+import { logger } from "../../config/logger";
 
 export class ProductRepository implements ProductRepositoryPort {
-    
-
+   
     /**
      * Funcion para crear un producto
      * @param data Datos del producto a crear
@@ -226,6 +228,71 @@ export class ProductRepository implements ProductRepositoryPort {
             const raw = await ProductModel.findOne({ where: { sku } });
             return ProductMapper.mapModelToEntityFind(raw);
         } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Funcion para obtener los movimientos de inventario de un producto
+     * @param productId ID del producto para obtener sus movimientos
+     * @returns Lista de movimientos de inventario del producto
+     */
+    async getProductMovements(productId: string): Promise<any[]> {
+        try {
+            logger.debug('Querying product movements', { productId });
+            
+            const raw = await ProductModel.findByPk(productId);
+            if (!raw) {
+                logger.warn('Product not found for movements query', { productId });
+                throw new ProductNotFoundError(productId);
+            }
+
+            const movements = await InventoryMovementModel.findAll({
+                where: { productId },
+                include: [
+                    {
+                        model: StoreModel,
+                        as: 'sourceStore',
+                        attributes: ['id', 'name', 'location']
+                    },
+                    {
+                        model: StoreModel,
+                        as: 'targetStore',
+                        attributes: ['id', 'name', 'location']
+                    }
+                ],
+                order: [['timestamp', 'DESC']]
+            });
+
+            logger.info('Product movements retrieved from database', { 
+                productId, 
+                movementsCount: movements.length 
+            });
+
+            return movements.map(movement => ({
+                id: movement.id,
+                productId: movement.productId,
+                type: movement.type,
+                quantity: movement.quantity,
+                timestamp: movement.timestamp,
+                sourceStore: movement.sourceStore ? {
+                    id: movement.sourceStore.id,
+                    name: movement.sourceStore.name,
+                    location: movement.sourceStore.location
+                } : null,
+                targetStore: movement.targetStore ? {
+                    id: movement.targetStore.id,
+                    name: movement.targetStore.name,
+                    location: movement.targetStore.location
+                } : null,
+                createdAt: movement.createdAt,
+                updatedAt: movement.updatedAt
+            }));
+        } catch (error) {
+            logger.error('Error querying product movements', { 
+                productId, 
+                error: error instanceof Error ? error.message : 'Unknown error' 
+            });
             throw error;
         }
     }

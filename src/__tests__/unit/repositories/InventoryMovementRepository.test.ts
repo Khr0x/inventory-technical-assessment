@@ -3,7 +3,6 @@ import { InventoryMovementModel, MovementType } from '../../../infraestructure/d
 import { InventoryMovementMapper } from '../../../infraestructure/mappers/InventoryMovementMapper';
 import { CreateMovementDTO } from '../../../domain/inventory/dto/InventoryDTO';
 
-// Mock del modelo de Sequelize
 jest.mock('../../../infraestructure/db/models/InventoryMovementModel', () => ({
   InventoryMovementModel: {
     create: jest.fn(),
@@ -15,7 +14,7 @@ jest.mock('../../../infraestructure/db/models/InventoryMovementModel', () => ({
   },
 }));
 
-// Mock del mapper
+
 jest.mock('../../../infraestructure/mappers/InventoryMovementMapper');
 
 describe('InventoryMovementRepository', () => {

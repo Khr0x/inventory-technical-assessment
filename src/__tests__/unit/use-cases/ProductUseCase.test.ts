@@ -6,14 +6,14 @@ import { CreateProductDTO, UpdateProductDTO } from '../../../domain/product/dto/
 import { DuplicateProductError, StoreNotFoundError, ProductNotFoundError } from '../../../errors';
 import { sequelize } from '../../../infraestructure/db/sequalize';
 
-// Mock de sequelize
+
 jest.mock('../../../infraestructure/db/sequalize', () => ({
   sequelize: {
     transaction: jest.fn(),
   },
 }));
 
-// Mock de los repositorios
+
 jest.mock('../../../infraestructure/repositories/ProductRepository');
 jest.mock('../../../infraestructure/repositories/InventoryRepository');
 jest.mock('../../../infraestructure/repositories/StoreRepository');
@@ -26,12 +26,12 @@ describe('ProductUseCase', () => {
   let mockTransaction: any;
 
   beforeEach(() => {
-    // Crear instancias mock de los repositorios
+
     mockProductRepository = new ProductRepository() as jest.Mocked<ProductRepository>;
     mockInventoryRepository = new InventoryRepository() as jest.Mocked<InventoryRepository>;
     mockStoreRepository = new StoreRepository() as jest.Mocked<StoreRepository>;
 
-    // Crear mock de transacción
+
     mockTransaction = {
       commit: jest.fn(),
       rollback: jest.fn(),
@@ -39,7 +39,6 @@ describe('ProductUseCase', () => {
 
     (sequelize.transaction as jest.Mock).mockResolvedValue(mockTransaction);
 
-    // Crear instancia del use case
     productUseCase = new ProductUseCase(
       mockProductRepository,
       mockInventoryRepository,

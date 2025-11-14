@@ -3,14 +3,12 @@ import { StoreRepository } from '../../../infraestructure/repositories/StoreRepo
 import { CreateStoreDTO } from '../../../domain/store/dto/StoreDTO';
 import { sequelize } from '../../../infraestructure/db/sequalize';
 
-// Mock de sequelize
 jest.mock('../../../infraestructure/db/sequalize', () => ({
   sequelize: {
     transaction: jest.fn(),
   },
 }));
 
-// Mock del repositorio
 jest.mock('../../../infraestructure/repositories/StoreRepository');
 
 describe('StoreUseCase', () => {
@@ -19,10 +17,8 @@ describe('StoreUseCase', () => {
   let mockTransaction: any;
 
   beforeEach(() => {
-    // Crear instancia mock del repositorio
     mockStoreRepository = new StoreRepository() as jest.Mocked<StoreRepository>;
 
-    // Crear mock de transacción
     mockTransaction = {
       commit: jest.fn(),
       rollback: jest.fn(),
@@ -30,7 +26,6 @@ describe('StoreUseCase', () => {
 
     (sequelize.transaction as jest.Mock).mockResolvedValue(mockTransaction);
 
-    // Crear instancia del use case
     storeUseCase = new StoreUseCase(mockStoreRepository);
 
     jest.clearAllMocks();

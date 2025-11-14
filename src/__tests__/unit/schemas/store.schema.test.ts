@@ -384,7 +384,6 @@ describe('Store Schemas', () => {
           id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
         };
 
-        // Este es técnicamente un UUID válido, así que debería pasar
         const result = storeIdParamSchema.safeParse(param);
         expect(result.success).toBe(true);
       });

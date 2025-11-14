@@ -9,7 +9,7 @@ const controller = new StoreController();
 
 router.post(StoreRoutes.BASE, validateSchema(createStoreSchema), (req, res) => controller.createStore(req, res));
 
-router.get(StoreRoutes.ID, validateSchema(storeIdParamSchema), (req, res) => controller.getStoreById(req, res));
+router.get(StoreRoutes.ID, (req, res) => controller.getStoreById(req, res));
 
 router.get(StoreRoutes.ALL, (req, res) => controller.getAllStores(req, res));
 

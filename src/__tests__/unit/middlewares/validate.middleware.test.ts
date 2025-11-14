@@ -115,8 +115,7 @@ describe('validateSchema Middleware', () => {
       });
 
       mockRequest.body = {
-        name: 'Juan',
-        // falta age
+        name: 'Juan'
       };
 
       const middleware = validateSchema(schema);
@@ -143,7 +142,7 @@ describe('validateSchema Middleware', () => {
 
       mockRequest.body = {
         name: 'Juan',
-        age: 'veinticinco', // debería ser número
+        age: 'veinticinco'
       };
 
       const middleware = validateSchema(schema);
@@ -170,9 +169,9 @@ describe('validateSchema Middleware', () => {
       });
 
       mockRequest.body = {
-        name: 123, // debería ser string
-        age: 'veinte', // debería ser número
-        email: 'correo-invalido', // debería ser email válido
+        name: 123, 
+        age: 'veinte', 
+        email: 'correo-invalido'
       };
 
       const middleware = validateSchema(schema);
@@ -200,7 +199,7 @@ describe('validateSchema Middleware', () => {
       });
 
       mockRequest.body = {
-        age: 150, // mayor que max
+        age: 150, 
       };
 
       const middleware = validateSchema(schema);
@@ -255,7 +254,7 @@ describe('validateSchema Middleware', () => {
       mockRequest.body = {
         user: {
           name: 'Juan',
-          age: 'treinta', // debería ser número
+          age: 'treinta',
         },
       };
 
@@ -281,7 +280,7 @@ describe('validateSchema Middleware', () => {
       });
 
       mockRequest.body = {
-        items: [1, 2, 'tres', 4], // 'tres' debería ser número
+        items: [1, 2, 'tres', 4]
       };
 
       const middleware = validateSchema(schema);
@@ -307,7 +306,6 @@ describe('validateSchema Middleware', () => {
         name: z.string(),
       });
 
-      // Simulamos un error en el proceso de parsing
       const mockSchema = {
         parse: jest.fn().mockImplementation(() => {
           throw new Error('Error inesperado');
@@ -346,7 +344,7 @@ describe('validateSchema Middleware', () => {
       });
       
       const callDetails = jsonMock.mock.calls[0][0].details;
-      expect(callDetails.length).toBe(2); // name y age faltantes
+      expect(callDetails.length).toBe(2);
       expect(mockNext).not.toHaveBeenCalled();
     });
 

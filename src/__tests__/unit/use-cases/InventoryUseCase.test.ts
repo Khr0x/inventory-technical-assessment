@@ -15,14 +15,12 @@ import {
 import { sequelize } from '../../../infraestructure/db/sequalize';
 import { MovementType } from '../../../domain/inventory/InventoryMovement';
 
-// Mock de sequelize
 jest.mock('../../../infraestructure/db/sequalize', () => ({
   sequelize: {
     transaction: jest.fn(),
   },
 }));
 
-// Mock de los repositorios
 jest.mock('../../../infraestructure/repositories/InventoryRepository');
 jest.mock('../../../infraestructure/repositories/InventoryMovementRepository');
 jest.mock('../../../infraestructure/repositories/StoreRepository');
@@ -37,13 +35,12 @@ describe('InventoryUseCase', () => {
   let mockTransaction: any;
 
   beforeEach(() => {
-    // Crear instancias mock de los repositorios
+
     mockInventoryRepository = new InventoryRepository() as jest.Mocked<InventoryRepository>;
     mockInventoryMovementRepository = new InventoryMovementRepository() as jest.Mocked<InventoryMovementRepository>;
     mockStoreRepository = new StoreRepository() as jest.Mocked<StoreRepository>;
     mockProductRepository = new ProductRepository() as jest.Mocked<ProductRepository>;
 
-    // Crear mock de transacción
     mockTransaction = {
       commit: jest.fn(),
       rollback: jest.fn(),
@@ -51,7 +48,6 @@ describe('InventoryUseCase', () => {
 
     (sequelize.transaction as jest.Mock).mockResolvedValue(mockTransaction);
 
-    // Crear instancia del use case
     inventoryUseCase = new InventoryUseCase(
       mockInventoryRepository,
       mockInventoryMovementRepository,

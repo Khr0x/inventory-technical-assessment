@@ -18,4 +18,6 @@ router.put(ProductRoutes.UPDATE, validateSchema(updateProductSchema), (req, res)
 
 router.delete(ProductRoutes.DELETE, (req, res) => controller.deleteProduct(req, res));
 
+router.get(ProductRoutes.MOVEMENTS, (req, res) => controller.getProductMovements(req, res));
+
 export default router;

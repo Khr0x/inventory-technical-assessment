@@ -15,7 +15,7 @@ describe('Tests de Integración - Productos', () => {
   });
 
   afterAll(async () => {
-    // Limpieza de datos de prueba
+    
   });
 
   describe('POST /api/products - Crear Producto', () => {

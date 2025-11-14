@@ -48,7 +48,7 @@ describe('Tests de Integración - Flujo de Inventario', () => {
   });
 
   afterAll(async () => {
-    // Limpieza de datos de prueba
+    
   });
 
   describe('Flujo Completo de Inventario', () => {

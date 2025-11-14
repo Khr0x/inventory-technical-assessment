@@ -157,6 +157,8 @@ En tu repositorio de GitHub, agregar los siguientes secrets:
 - `GCP_REGION`: Región para Cloud Run (ej. `us-central1`)
 - `CLOUD_RUN_SERVICE`: Nombre del servicio en Cloud Run (ej. `inventory-api`)
 - `REGISTRY_PROVIDER`: Define el destino del registro de imágenes: `artifact` o `dockerhub`
+- `DATABASE_URL`: Define la cadena de conexion de Postgres en CloudSQL
+- `CLOUD_SQL_CONNECTION_NAME`: Define la instancia de CloudSQL
 
 **Si `REGISTRY_PROVIDER = artifact`:**
 
@@ -166,7 +168,7 @@ En tu repositorio de GitHub, agregar los siguientes secrets:
 **Si `REGISTRY_PROVIDER = dockerhub`:**
 
 - `DOCKERHUB_USERNAME`: Usuario de Docker Hub
-- `DOCKERHUB_TOKEN`: Token de acceso personal de Docker Hub
+- `DOCKERHUB_TOKEN`: Token de acceso personal de Docker Hub 
 
 **Configuración de Base de Datos(opcional):**
 
@@ -289,8 +291,10 @@ jobs:
             --region="${REGION}" \
             --platform=managed \
             --allow-unauthenticated \
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
-            --set-env-vars="NODE_ENV=production"
+            --port=8080 \
+            --timeout=300 \
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},NODE_ENV=production" \
+            --add-cloudsql-instances="${{ secrets.CLOUD_SQL_CONNECTION_NAME }}"
 ```
 
 ---

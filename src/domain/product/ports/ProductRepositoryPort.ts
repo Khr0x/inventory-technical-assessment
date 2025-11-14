@@ -19,4 +19,5 @@ export interface ProductRepositoryPort {
   findById(id: string): Promise<Product | null>;
   delete(id: string, tx?: any): Promise<boolean>;
   findBySku(sku: string): Promise<Product | null>;
+  getProductMovements(productId: string): Promise<any[]>;
 }

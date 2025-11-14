@@ -3,5 +3,6 @@ export enum ProductRoutes {
   ID = '/products/:id',
   ALL = '/products',
   UPDATE = '/products/:id',
-  DELETE = '/products/:id'
+  DELETE = '/products/:id',
+  MOVEMENTS = '/products/:id/movements',
 }
