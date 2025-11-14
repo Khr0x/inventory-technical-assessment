@@ -111,4 +111,4 @@ jobs:
             --port=8080 \
             --timeout=300 \
             --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},NODE_ENV=production" \
-            --add-cloudsql-instances="${{ secrets.GCP_PROJECT }}:${{ secrets.GCP_REGION }}:${{ secrets.GCP_POSTGRES_INSTANCE }}"
+            --add-cloudsql-instances="${{ secrets.CLOUD_SQL_CONNECTION_NAME }}"
