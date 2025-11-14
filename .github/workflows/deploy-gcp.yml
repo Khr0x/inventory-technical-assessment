@@ -110,4 +110,5 @@ jobs:
             --allow-unauthenticated \
             --port=8080 \
             --timeout=300 \
-            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},NODE_ENV=production"
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},NODE_ENV=production" \
+            --add-cloudsql-instances="${{ secrets.GCP_PROJECT }}:${{ secrets.GCP_REGION }}:${{ secrets.GCP_POSTGRES_INSTANCE }}"
