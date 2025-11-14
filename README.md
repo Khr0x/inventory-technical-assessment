@@ -347,6 +347,7 @@ curl -X POST http://localhost:3000/api/stores \
 | GET | `/products/:id` | Obtener producto por ID |
 | PUT | `/products/:id` | Actualizar producto |
 | DELETE | `/products/:id` | Eliminar producto |
+| GET | `/products/:id/movements` | Obtener movimientos de inventario de un producto |
 
 **Ejemplo - Crear Producto:**
 ```bash
@@ -381,6 +382,39 @@ curl "http://localhost:3000/api/products?page=1&limit=10"
         }
     ],
     "count": 8
+}
+```
+
+**Ejemplo - Obtener Movimientos de un Producto:**
+```bash
+curl http://localhost:3000/api/products/{productId}/movements
+```
+
+**Respuesta:**
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "id": "uuid",
+            "productId": "uuid",
+            "type": "TRANSFER",
+            "quantity": 10,
+            "timestamp": "2025-11-14T10:30:00.000Z",
+            "sourceStore": {
+                "id": "uuid",
+                "name": "Tienda Centro",
+                "location": "Av. Principal #123"
+            },
+            "targetStore": {
+                "id": "uuid",
+                "name": "Tienda Norte",
+                "location": "Calle Norte #456"
+            },
+            "createdAt": "2025-11-14T10:30:00.000Z",
+            "updatedAt": "2025-11-14T10:30:00.000Z"
+        }
+    ]
 }
 ```
 
@@ -538,6 +572,15 @@ Para la transferencia de productos entre tiendas se decidió:
 - **Creación automática de inventario**: Si una tienda destino no tiene inventario de un producto específico, se crea automáticamente durante la transferencia
 - **Validación de stock**: Se verifica que la tienda origen tenga suficiente stock antes de realizar la transferencia
 - **Atomicidad**: Las operaciones de transferencia son transaccionales para garantizar consistencia de datos
+
+**Movimientos de Productos**
+
+Se implementó un API completo para consultar el historial de movimientos de inventario de cada producto:
+- **Endpoint `/products/:id/movements`**: Retorna todos los movimientos de un producto específico
+- **Información detallada de tiendas**: Incluye datos de la tienda origen y destino para cada movimiento
+- **Tipos de movimiento**: Soporta movimientos de entrada (IN), salida (OUT) y transferencias (TRANSFER)
+- **Ordenamiento cronológico**: Los movimientos se ordenan por fecha descendente (más recientes primero)
+- **Logs estructurados**: Todas las operaciones se registran con logs en formato JSON para trazabilidad
 
 **Uso de DTOs y ORM**
 
